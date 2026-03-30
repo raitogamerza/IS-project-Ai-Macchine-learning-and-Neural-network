@@ -8,6 +8,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from wordcloud import WordCloud
 from collections import Counter
+import matplotlib.font_manager as fm
+
+# ============================
+# ตั้งค่า Font สำหรับภาษาไทยใน Matplotlib
+# ============================
+# ใช้ฟอนต์ Tahoma ซึ่งรองรับภาษาไทยและมีอยู่ในเครื่อง Windows ทั่วไป
+plt.rcParams['font.family'] = 'Tahoma'
 
 # ============================
 # Page Config
@@ -124,7 +131,7 @@ Logistic Regression + TF-IDF Vectorization
 # Load Data
 # ============================
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.path.join(BASE_DIR, "Macchine-learning", "Dataset")
+DATA_DIR = os.path.join(BASE_DIR, "Machine-learning", "Dataset")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 
 
@@ -317,31 +324,23 @@ plt.tight_layout()
 st.pyplot(fig)
 plt.close()
 
-# Stats table
-col1, col2 = st.columns(2)
-with col1:
-    st.write("**Real News Text Length Stats:**")
-    st.dataframe(df[df["label"] == 1]["text_length"].describe().to_frame("Real News"), use_container_width=True)
-with col2:
-    st.write("**Fake News Text Length Stats:**")
-    st.dataframe(df[df["label"] == 0]["text_length"].describe().to_frame("Fake News"), use_container_width=True)
-
 # --- 1.5 Word Cloud ---
 st.subheader("☁️ 1.5 Word Cloud")
 
-
-@st.cache_data
+@st.cache_resource
 def generate_wordcloud(text, color):
     wc = WordCloud(
-        width=800, height=400,
+        width=1000, height=500,        # ขยายพื้นที่ให้กว้างขึ้น
         background_color='#0e1117',
         colormap=color,
-        max_words=200,
+        max_words=80,                  # ลดจำนวนคำให้อ่านง่ายขึ้น
+        relative_scaling=0.5,          # ปรับสเกลขนาดคำให้สมดุล
+        normalize_plurals=False,
+        collocations=False,            # ปิดการจับคู่คำเพื่อลดความหนาแน่น
         contour_width=1,
         contour_color='white'
     ).generate(text)
     return wc
-
 
 col1, col2 = st.columns(2)
 
@@ -371,7 +370,6 @@ with col2:
 
 # --- 1.6 Top 20 Words ---
 st.subheader("🔤 1.6 Top 20 คำที่พบบ่อยที่สุด")
-
 
 @st.cache_data
 def get_top_words(texts, n=20):
@@ -478,7 +476,7 @@ def clean_text(text):
     text = re.sub(r"http\\S+|www\\S+|https\\S+", "", text)  # Remove URLs
     text = re.sub(r"<.*?>", "", text)                        # Remove HTML
     text = re.sub(r"[^a-zA-Z\\s]", "", text)                 # Keep letters only
-    text = re.sub(r"\\s+", " ", text).strip()                 # Remove extra spaces
+    text = re.sub(r"\\s+", " ", text).strip()                # Remove extra spaces
     return text
 
 df["clean_text"] = (df["title"] + " " + df["text"]).apply(clean_text)

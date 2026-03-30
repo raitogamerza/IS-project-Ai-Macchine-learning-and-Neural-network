@@ -240,8 +240,9 @@ if st.button("🔍 Predict", type="primary", use_container_width=True):
 
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
-            ax.spines['bottom'].set_color('rgba(255,255,255,0.3)')
-            ax.spines['left'].set_color('rgba(255,255,255,0.3)')
+            # แก้ไขตรงนี้: เปลี่ยนการใช้คำว่า rgba() เป็น tuple สีขาวพร้อมความโปร่งใส 0.3
+            ax.spines['bottom'].set_color((1.0, 1.0, 1.0, 0.3))
+            ax.spines['left'].set_color((1.0, 1.0, 1.0, 0.3))
 
             plt.tight_layout()
             st.pyplot(fig)
