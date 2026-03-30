@@ -13,7 +13,6 @@ import matplotlib.font_manager as fm
 # ============================
 # ตั้งค่า Font สำหรับภาษาไทยใน Matplotlib
 # ============================
-# ใช้ฟอนต์ Tahoma ซึ่งรองรับภาษาไทยและมีอยู่ในเครื่อง Windows ทั่วไป
 plt.rcParams['font.family'] = 'Tahoma'
 
 # ============================
@@ -128,17 +127,36 @@ Logistic Regression + TF-IDF Vectorization
 """, unsafe_allow_html=True)
 
 # ============================
-# Load Data
+# Load Data (Super Auto-Search)
 # ============================
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.path.join(BASE_DIR, "Machine-learning", "Dataset")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
-
 
 @st.cache_data
 def load_data():
-    true_df = pd.read_csv(os.path.join(DATA_DIR, "True.csv", "True.csv"))
-    fake_df = pd.read_csv(os.path.join(DATA_DIR, "Fake.csv", "Fake.csv"))
+    true_file = None
+    fake_file = None
+
+    # สแกนหาไฟล์ทั่วทั้งโปรเจกต์
+    for root, dirs, files in os.walk(BASE_DIR):
+        for file in files:
+            if file == "True.csv":
+                true_file = os.path.join(root, file)
+            elif file == "Fake.csv":
+                fake_file = os.path.join(root, file)
+        
+        # ถ้าเจอทั้งสองไฟล์แล้วก็หยุดค้นหาได้เลย
+        if true_file and fake_file:
+            break
+
+    if not true_file or not fake_file:
+        st.error("❌ หาไฟล์ `True.csv` หรือ `Fake.csv` ไม่เจอเลยครับ กรุณาตรวจสอบว่ามีไฟล์นี้อยู่ในโฟลเดอร์โปรเจกต์ของคุณจริงๆ")
+        st.stop()
+
+    # โหลดไฟล์เมื่อเจอ Path ที่ถูกต้อง
+    true_df = pd.read_csv(true_file)
+    fake_df = pd.read_csv(fake_file)
+
     true_df["label"] = 1
     fake_df["label"] = 0
     df = pd.concat([true_df, fake_df], ignore_index=True)
@@ -159,7 +177,6 @@ def load_eda_data():
     if os.path.exists(eda_path):
         return joblib.load(eda_path)
     return None
-
 
 df, true_df, fake_df = load_data()
 metrics = load_metrics()
@@ -330,13 +347,13 @@ st.subheader("☁️ 1.5 Word Cloud")
 @st.cache_resource
 def generate_wordcloud(text, color):
     wc = WordCloud(
-        width=1000, height=500,        # ขยายพื้นที่ให้กว้างขึ้น
+        width=1000, height=500,
         background_color='#0e1117',
         colormap=color,
-        max_words=80,                  # ลดจำนวนคำให้อ่านง่ายขึ้น
-        relative_scaling=0.5,          # ปรับสเกลขนาดคำให้สมดุล
+        max_words=80,
+        relative_scaling=0.5,
         normalize_plurals=False,
-        collocations=False,            # ปิดการจับคู่คำเพื่อลดความหนาแน่น
+        collocations=False,
         contour_width=1,
         contour_color='white'
     ).generate(text)
